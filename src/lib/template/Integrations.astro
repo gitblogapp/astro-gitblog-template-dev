@@ -1,0 +1,18 @@
+---
+import type {Blog} from './content';
+interface Props {blog:Blog}
+const {blog}=Astro.props;
+const {config}=blog;
+const analytics={enabled:config.env.PUBLIC_ANALYTICS_ENABLED,hubEnabled:String(config.hubEnabled),hubUrl:config.env.PUBLIC_HUB_URL,repository:config.repository,siteUrl:config.siteUrl};
+---
+{import.meta.env.PROD && <span hidden data-gitblog-analytics={JSON.stringify(analytics)}></span>}
+<script>
+ import {analyticsRequest} from '@gitblogapp/browser/analytics';
+ const el=document.querySelector<HTMLElement>('[data-gitblog-analytics]');
+ if(el){
+  const request=analyticsRequest(JSON.parse(el.dataset.gitblogAnalytics!),location.href,document.referrer,navigator.doNotTrack==='1'||(navigator as Navigator&{globalPrivacyControl?:boolean}).globalPrivacyControl===true);
+  let timer:ReturnType<typeof setTimeout>|undefined;
+  const send=()=>{if(document.visibilityState!=='visible'||!request)return;document.removeEventListener('visibilitychange',send);timer=setTimeout(()=>{if(document.visibilityState==='visible')void fetch(request.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request.body),credentials:'omit',keepalive:true}).catch(()=>{});},800);};
+  if(request){document.addEventListener('visibilitychange',send);send();window.addEventListener('pagehide',()=>{clearTimeout(timer);document.removeEventListener('visibilitychange',send);},{once:true});}
+ }
+</script>

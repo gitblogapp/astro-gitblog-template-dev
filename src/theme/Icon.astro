@@ -1,0 +1,47 @@
+---
+interface Props {
+  name:
+    | 'arrow'
+    | 'external'
+    | 'back'
+    | 'up'
+    | 'chevron'
+    | 'check'
+    | 'search'
+    | 'rss'
+    | 'code'
+    | 'layers'
+    | 'grid';
+  class?: string;
+}
+const { name, class: className = '' } = Astro.props;
+const paths = {
+  arrow: 'M4 12h16m-6-6 6 6-6 6',
+  external: 'M6 18 18 6M6 6h12v12',
+  back: 'M20 12H4m6-6-6 6 6 6',
+  up: 'M12 20V4m-6 6 6-6 6 6',
+  chevron: 'm6 9 6 6 6-6',
+  check: 'm5 12 4 4L19 6',
+  search: 'm16 16 4 4',
+  rss: 'M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14',
+  code: 'm8 6-6 6 6 6m8-12 6 6-6 6m-3-15-2 18',
+  layers: 'm12 3 10 6-10 6L2 9l10-6ZM2 13l10 6 10-6M2 17l10 6 10-6',
+  grid: 'M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z',
+};
+---
+
+<svg
+  class:list={['icon', className]}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.6"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+>
+  {name === 'search' && <circle cx="10.5" cy="10.5" r="6.5" />}
+  {name === 'rss' && <circle cx="5" cy="19" r="1" fill="currentColor" stroke="none" />}
+  <path d={paths[name]} />
+</svg>

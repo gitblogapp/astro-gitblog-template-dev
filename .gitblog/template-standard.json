@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "standardVersion": "0.1.0",
+  "sourceTemplate": "gitblogapp/svelte-gitblog-template",
+  "sourceCommit": "8e341bac3096731e14891a867bb16ab20ba70fd6",
+  "framework": "astro",
+  "adaptations": [
+    "Astro renderer and existing theme/extension paths",
+    "Legacy content/site.json public settings fallback shared with the harness",
+    "PUBLIC_HUB_REPOSITORY remains a fallback alias",
+    "Official registration remains opt-in and requires service support",
+    "Shared package adapters, membership, analytics, recommendations, speech and optimized images",
+    "Compact localized Astro audio controls and enabled-by-default user-blog speech",
+    "Platform excerpt generation delegated to gitblogapp/gitblog-tts",
+    "Pinned, service-authorized history-removal caller; official registration remains gated"
+  ],
+  "sourceVersion": "1.14.4",
+  "packages": {
+    "version": "0.1.1",
+    "repository": "gitblogapp/gitblog-template-packages"
+  }
+}

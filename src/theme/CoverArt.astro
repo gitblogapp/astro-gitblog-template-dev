@@ -1,0 +1,37 @@
+---
+interface Props {
+  variant?: number;
+  hero?: boolean;
+}
+const { variant = 0, hero = false } = Astro.props;
+---
+
+<svg
+  class:list={['cover-art', { 'hero-diagram': hero }]}
+  data-variant={variant % 3}
+  viewBox="0 0 600 360"
+  fill="none"
+  aria-hidden="true"
+  focusable="false"
+>
+  <g class="art-grid" stroke="currentColor" stroke-width="1">
+    {[60, 120, 180, 240, 300, 360, 420, 480, 540].map((x) => (
+      <path d={`M${x} 0v360`} />
+    ))}
+    {[60, 120, 180, 240, 300].map((y) => (
+      <path d={`M0 ${y}h600`} />
+    ))}
+  </g>
+  <g class="art-lines" stroke="currentColor" stroke-width="1.5">
+    <path d="m300 68 150 82-150 82-150-82 150-82Z" />
+    <path d="m150 190 150 82 150-82M150 230l150 82 150-82" />
+    <path d="M300 232v80M150 150v80M450 150v80" stroke-dasharray="4 7" />
+    <path d="M90 90h70m-35-35v70M440 270h70m-35-35v70" opacity=".45" />
+  </g>
+  <path class="art-center" d="m300 114 68 36-68 36-68-36 68-36Z" fill="currentColor" />
+  <g class="art-lines" fill="currentColor">
+    <circle cx="150" cy="150" r="4" />
+    <circle cx="450" cy="150" r="4" />
+    <circle cx="300" cy="312" r="4" />
+  </g>
+</svg>

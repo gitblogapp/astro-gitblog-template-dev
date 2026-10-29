@@ -1,0 +1,222 @@
+---
+import type { Blog } from '../lib/template/content';
+import { localizedSite } from '../lib/template/config';
+import { postPath, rssPath, searchPath, withBase } from '../lib/template/urls';
+import { copy } from './copy';
+import Icon from './Icon.astro';
+import CoverArt from './CoverArt.astro';
+interface Props {
+  blog: Blog;
+  locale: string;
+}
+const { blog, locale } = Astro.props;
+const { config } = blog;
+const site = localizedSite(config, locale),
+  ui = copy(locale),
+  posts = blog.forLocale(locale);
+const [featured] = posts;
+const categories = [...new Set(posts.map((post) => post.category))];
+const date = (value: string) =>
+  new Intl.DateTimeFormat(site.language, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(value));
+---
+
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">
+      <span class="eyebrow-line"></span>
+      {ui.intro}
+    </p>
+    <h1>
+      {site.tagline.split('\n').map((line, index) => (
+        <>
+          {index > 0 && <br />}
+          {line}
+        </>
+      ))}
+    </h1>
+    <p class="hero-description">{site.description}</p>
+    <a class="hero-link" href="#entries">
+      {ui.archive}
+      <Icon name="arrow" />
+    </a>
+  </div>
+  <div class="hero-visual" aria-hidden="true">
+    <CoverArt hero />
+    <span class="diagram-caption">IDEAS INTO IMPACT</span>
+  </div>
+</section>
+{featured && (
+  <section class="featured-section" aria-label={ui.featured}>
+    <a class="featured-card" href={postPath(config, locale, featured.slug)}>
+      <div class="featured-art">
+        {featured.cover ? (
+          <img
+            src={withBase(config, featured.cover)}
+            alt=""
+            width="900"
+            height="540"
+            fetchpriority="high"
+          />
+        ) : (
+          <CoverArt />
+        )}
+        <span class="featured-label">FEATURED</span>
+      </div>
+      <div class="featured-copy">
+        <div class="post-meta">
+          <span class="category">{featured.category}</span>
+          <time datetime={featured.date}>{date(featured.date)}</time>
+        </div>
+        <h2>{featured.title}</h2>
+        <p>{featured.description}</p>
+        <span class="read-link">
+          {ui.read}
+          <Icon name="arrow" />
+        </span>
+      </div>
+    </a>
+  </section>
+)}
+<div class="journal-grid">
+  <section class="entries" id="entries">
+    <div class="section-heading">
+      <h2>{ui.latest}</h2>
+      <span class="count">
+        {String(posts.length).padStart(2, '0')} {ui.articles}
+      </span>
+    </div>
+    {posts.length > 0 && (
+      <div class="category-tabs" role="group" aria-label={ui.topics}>
+        <button type="button" class="active" data-filter="" aria-pressed="true">
+          {ui.all}
+        </button>
+        {categories.map((category) => (
+          <button type="button" data-filter={category} aria-pressed="false">
+            {category}
+          </button>
+        ))}
+      </div>
+    )}
+    <div class="post-list">
+      {posts.map((post, index) => (
+        <article class="entry" data-category={post.category}>
+          <a
+            class="entry-image"
+            tabindex="-1"
+            aria-hidden="true"
+            href={postPath(config, locale, post.slug)}
+          >
+            {post.cover ? (
+              <img
+                src={withBase(config, post.cover)}
+                alt=""
+                width="600"
+                height="360"
+                loading="lazy"
+              />
+            ) : (
+              <CoverArt variant={index + 1} />
+            )}
+          </a>
+          <div class="entry-content">
+            <div class="post-meta">
+              <span class="category">{post.category}</span>
+              <time datetime={post.date}>{date(post.date)}</time>
+            </div>
+            <h3>
+              <a href={postPath(config, locale, post.slug)}>
+                {post.title}
+                <Icon name="external" />
+              </a>
+            </h3>
+            <p>{post.description}</p>
+            <div class="entry-bottom">
+              <div class="tags">
+                {post.tags.slice(0, 2).map((tag) => (
+                  <a href={`${searchPath(config, locale)}?q=${encodeURIComponent(tag)}`}>#{tag}</a>
+                ))}
+              </div>
+              <span class="reading-time">
+                {post.readingMinutes} {ui.minute}
+              </span>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+    {!posts.length && (
+      <div class="empty-state">
+        <span class="empty-symbol">
+          <Icon name="layers" />
+        </span>
+        <h3>{ui.noPosts}</h3>
+        <p>{ui.emptyIntro}</p>
+      </div>
+    )}
+    {posts.length > 0 && (
+      <p class="archive-end">
+        <span></span>
+        {ui.archiveEnd}
+        <span></span>
+      </p>
+    )}
+  </section>
+  <aside class="sidebar">
+    <section class="about-card">
+      <p class="eyebrow">ABOUT {site.title}</p>
+      <Icon name="code" class="about-symbol" />
+      <h2>{ui.about}</h2>
+      <p>{ui.aboutText}</p>
+      <div class="social-links">
+        {site.socials.map((social) => (
+          <a href={social.url} target="_blank" rel="me noreferrer">
+            {social.label}
+            <Icon name="external" />
+          </a>
+        ))}
+      </div>
+    </section>
+    {categories.length > 0 && (
+      <section class="topics-card">
+        <h2 class="eyebrow">{ui.topics}</h2>
+        {categories.map((category) => (
+          <a href={`${searchPath(config, locale)}?category=${encodeURIComponent(category)}`}>
+            <span>{category}</span>
+            <span class="topic-count">
+              {String(posts.filter((post) => post.category === category).length).padStart(2, '0')}
+              <Icon name="external" />
+            </span>
+          </a>
+        ))}
+      </section>
+    )}
+    <section class="rss-card">
+      <Icon name="rss" />
+      <h3>{ui.subscribe}</h3>
+      <p>{ui.rssDescription}</p>
+      <a href={rssPath(config, locale)}>
+        {ui.rss}
+        <Icon name="arrow" />
+      </a>
+    </section>
+  </aside>
+</div>
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+  buttons.forEach((button) =>
+    button.addEventListener('click', () => {
+      buttons.forEach((other) => {
+        other.classList.toggle('active', other === button);
+        other.setAttribute('aria-pressed', String(other === button));
+      });
+      document.querySelectorAll<HTMLElement>('.entry[data-category]').forEach((entry) => {
+        entry.hidden = !!button.dataset.filter && entry.dataset.category !== button.dataset.filter;
+      });
+    }),
+  );
+</script>

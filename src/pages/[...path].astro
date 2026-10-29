@@ -1,0 +1,41 @@
+---
+import { loadBlog, type Post } from '../lib/template/content';
+import Layout from '../theme/Layout.astro';
+import Home from '../theme/Home.astro';
+import Article from '../theme/Article.astro';
+import Search from '../theme/Search.astro';
+import { homePath } from '../lib/template/urls';
+export function getStaticPaths() {
+  const blog = loadBlog();
+  return blog.config.locales.flatMap((locale) => {
+    const prefix = locale === blog.config.sourceLocale ? '' : `${locale}/`;
+    return [
+      { params: { path: prefix.replace(/\/$/, '') || undefined }, props: { locale, page: 'home' } },
+      { params: { path: `${prefix}search` }, props: { locale, page: 'search' } },
+      { params: { path: `${prefix}blog` }, props: { locale, page: 'redirect' } },
+      ...blog
+        .forLocale(locale)
+        .map((post) => ({
+          params: { path: `${prefix}blog/${post.slug}` },
+          props: { locale, page: 'post', slug: post.slug },
+        })),
+    ];
+  });
+}
+interface Props {
+  locale: string;
+  page: 'home' | 'search' | 'post' | 'redirect';
+  slug?: string;
+}
+const { locale, page, slug } = Astro.props;
+const blog = loadBlog();
+if (page === 'redirect') return Astro.redirect(homePath(blog.config, locale), 301);
+const post =
+  page === 'post' ? (blog.forLocale(locale).find((post) => post.slug === slug) as Post) : undefined;
+---
+
+<Layout blog={blog} locale={locale} page={page} post={post}>
+  {page === 'home' && <Home blog={blog} locale={locale} />}
+  {page === 'search' && <Search blog={blog} locale={locale} />}
+  {page === 'post' && post && <Article blog={blog} locale={locale} post={post} />}
+</Layout>

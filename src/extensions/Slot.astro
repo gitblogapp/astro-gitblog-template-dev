@@ -1,0 +1,13 @@
+---
+import type { ExtensionContext, ExtensionSlot } from '../lib/template/contracts';
+interface Props extends ExtensionContext {
+  name: ExtensionSlot;
+}
+const { name } = Astro.props;
+// Add your Astro components here. All context is available through Astro.props.
+// Example: {name === 'article-after-body' && <YourWidget {...Astro.props} />}
+---
+
+<div class="extension-slot" data-extension-slot={name}>
+  <slot />
+</div>

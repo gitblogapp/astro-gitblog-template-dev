@@ -1,0 +1,253 @@
+---
+import { localizedSite, languageTag } from '../lib/template/config';
+import type { Blog, Post } from '../lib/template/content';
+import { absolute, homePath, postPath, rssPath, searchPath, withBase } from '../lib/template/urls';
+import { copy, localeLabel } from './copy';
+import Integrations from '../lib/template/Integrations.astro';
+import Mark from './Mark.astro';
+import Icon from './Icon.astro';
+import Slot from '../extensions/Slot.astro';
+import './global.css';
+interface Props {
+  blog: Blog;
+  locale: string;
+  page?: 'home' | 'search' | 'post' | '404';
+  post?: Post;
+}
+const { blog, locale, page = 'home', post } = Astro.props;
+const { config } = blog;
+const site = localizedSite(config, locale);
+const ui = copy(locale);
+const pathname =
+  page === 'post' && post
+    ? postPath(config, locale, post.slug)
+    : page === 'search'
+      ? searchPath(config, locale)
+      : page === '404'
+        ? withBase(config, '/404.html')
+        : homePath(config, locale);
+const variants = post
+  ? blog.posts.filter((other) => other.id === post.id).map((other) => other.locale)
+  : config.locales;
+const variantPath = (other: string) =>
+  post
+    ? postPath(config, other, post.slug)
+    : page === 'search'
+      ? searchPath(config, other)
+      : homePath(config, other);
+const title = post
+  ? `${post.title} — ${site.title}`
+  : page === 'search'
+    ? `${ui.search} — ${site.title}`
+    : page === '404'
+      ? `404 — ${site.title}`
+      : `${site.title} — ${site.tagline.replaceAll('\n', ' ')}`;
+const description = post?.description ?? site.description;
+const canonical = absolute(config, pathname);
+const structured = post
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.title,
+      ...(post.access === 'membership'
+        ? {
+            isAccessibleForFree: false,
+            hasPart: {
+              '@type': 'WebPageElement',
+              isAccessibleForFree: false,
+              cssSelector: '.membership-embed',
+            },
+          }
+        : {}),
+      description,
+      datePublished: new Date(post.date).toISOString(),
+      dateModified: post.lastModified,
+      author: { '@type': 'Person', name: site.author },
+      mainEntityOfPage: canonical,
+      url: canonical,
+      inLanguage: site.language,
+      ...(post.cover ? { image: absolute(config, post.cover) } : {}),
+    }
+  : null;
+---
+
+<!doctype html>
+<html lang={site.language}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {post && config.policy.markdown && (
+      <link rel="alternate" type="text/markdown" href={`${canonical}index.md`} />
+    )}
+    <link rel="icon" type="image/svg+xml" href={withBase(config, '/favicon.svg')} />
+    <link rel="manifest" href={withBase(config, '/site.webmanifest')} />
+    <meta name="theme-color" content="#ffffff" />
+    {page === '404' ? (
+      <meta name="robots" content="noindex" />
+    ) : (
+      <>
+        {variants.map((other) => (
+          <link
+            rel="alternate"
+            hreflang={languageTag(other)}
+            href={absolute(config, variantPath(other))}
+          />
+        ))}
+        <link
+          rel="alternate"
+          hreflang="x-default"
+          href={absolute(config, variantPath(config.sourceLocale))}
+        />
+      </>
+    )}
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${site.title} RSS`}
+      href={rssPath(config, locale)}
+    />
+    <meta property="og:title" content={post?.title ?? site.title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content={post ? 'article' : 'website'} />
+    <meta property="og:site_name" content={site.title} />
+    <meta property="og:locale" content={site.language.replace('-', '_')} />
+    {post?.cover && <meta property="og:image" content={absolute(config, post.cover)} />}
+    {post && (
+      <>
+        <meta property="article:published_time" content={new Date(post.date).toISOString()} />
+        <meta property="article:modified_time" content={post.lastModified} />
+      </>
+    )}
+    <meta name="twitter:card" content={post?.cover ? 'summary_large_image' : 'summary'} />
+    {site.verification && <meta name="google-site-verification" content={site.verification} />}
+    {site.bingVerification && <meta name="msvalidate.01" content={site.bingVerification} />}
+    {structured && (
+      <script
+        type="application/ld+json"
+        set:html={JSON.stringify(structured).replaceAll('<', '\\u003c')}
+      />
+    )}
+    <script is:inline>
+      try {
+        const t = localStorage.getItem('margin-theme');
+        document.documentElement.dataset.theme =
+          t || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      } catch {
+        document.documentElement.dataset.theme = 'light';
+      }
+    </script>
+  </head>
+  <body data-pagefind-ignore={post ? undefined : 'all'} data-giscus-host={site.giscusHost}>
+    <a class="skip-link" href="#main">
+      {ui.skip}
+    </a>
+    <header class="site-header wrap">
+      <a class="brand" href={homePath(config, locale)} aria-label={`${site.title} home`}>
+        <Mark />
+        <span>{site.title}</span>
+      </a>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <span class="brand-descriptor">TECH BLOG</span>
+      <nav class="primary-nav" aria-label={locale === 'ko' ? '주 메뉴' : 'Main navigation'}>
+        <a href={homePath(config, locale)} aria-current={page === 'home' ? 'page' : undefined}>
+          {ui.journal}
+        </a>
+        <a
+          href={searchPath(config, locale)}
+          aria-label={ui.search}
+          aria-current={page === 'search' ? 'page' : undefined}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="m16 16 5 5" />
+          </svg>
+          <span>{ui.search}</span>
+        </a>
+      </nav>
+      <div class="header-tools">
+        {config.locales.length > 1 && (
+          <details class="language-menu">
+            <summary aria-label="Language">
+              {locale.toUpperCase()} <Icon name="chevron" />
+            </summary>
+            <div>
+              {config.locales.map((other) => (
+                <a
+                  lang={languageTag(other)}
+                  href={variants.includes(other) ? variantPath(other) : homePath(config, other)}
+                  aria-current={other === locale ? 'true' : undefined}
+                >
+                  {localeLabel(other)}
+                  {other === locale && <Icon name="check" />}
+                </a>
+              ))}
+            </div>
+          </details>
+        )}
+        <button class="theme-toggle" type="button" aria-label={ui.theme} title={ui.theme}>
+          <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+          </svg>
+          <svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <slot />
+    </main>
+    <footer class="site-footer wrap">
+      <div>
+        <a class="brand footer-brand" href={homePath(config, locale)}>
+          <Mark />
+          <span>{site.title}</span>
+        </a>
+        <p>{site.footer}</p>
+      </div>
+      <div class="footer-right">
+        <div>
+          {site.socials.map((social) => (
+            <a href={social.url} rel="me noreferrer" target="_blank">
+              {social.label} <Icon name="external" />
+            </a>
+          ))}
+          <a href={rssPath(config, locale)}>
+            RSS <Icon name="external" />
+          </a>
+        </div>
+        <p>
+          © {new Date().getUTCFullYear()} {site.author} · Built with Astro
+        </p>
+      </div>
+    </footer>
+    <Slot name="site-footer" site={site} locale={locale} pathname={pathname} post={post} />
+    <script>
+      const button = document.querySelector<HTMLButtonElement>('.theme-toggle');
+      button?.addEventListener('click', () => {
+        const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = theme;
+        try {
+          localStorage.setItem('margin-theme', theme);
+        } catch {
+          /* optional storage */
+        }
+        const frame = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+        frame?.contentWindow?.postMessage(
+          { giscus: { setConfig: { theme: theme === 'dark' ? 'dark_dimmed' : 'light' } } },
+          document.body.dataset.giscusHost || 'https://giscus.app',
+        );
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape')
+          document.querySelectorAll('details[open]').forEach((el) => el.removeAttribute('open'));
+      });
+    </script>
+    <Integrations blog={blog} />
+  </body>
+</html>

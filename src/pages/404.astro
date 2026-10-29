@@ -1,0 +1,25 @@
+---
+import { loadBlog } from '../lib/template/content';
+import { homePath } from '../lib/template/urls';
+import Layout from '../theme/Layout.astro';
+import Icon from '../theme/Icon.astro';
+const blog = loadBlog();
+const locale = blog.config.sourceLocale;
+---
+
+<Layout blog={blog} locale={locale} page="404">
+  <section class="not-found">
+    <p class="eyebrow">A PAGE OUT OF PLACE</p>
+    <h1>
+      404<span>.</span>
+    </h1>
+    <p>
+      {locale === 'ko'
+        ? '이 페이지는 아직 쓰이지 않았거나, 다른 곳으로 옮겨졌습니다.'
+        : 'This page has not been written, or has moved somewhere else.'}
+    </p>
+    <a class="read-link" href={homePath(blog.config, locale)}>
+      {locale === 'ko' ? '아티클 목록' : 'All articles'} <Icon name="arrow" />
+    </a>
+  </section>
+</Layout>

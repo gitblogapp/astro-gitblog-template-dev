@@ -1,0 +1,54 @@
+---
+import type { Blog, Post } from './content';
+interface Props {
+  blog: Blog;
+  post: Post;
+}
+const { blog, post } = Astro.props;
+const { env, hubEnabled, repository } = blog.config;
+const off = (v: string | undefined) =>
+  ['false', '0', 'off', 'no'].includes((v ?? '').toLowerCase());
+const limit = Number(env.PUBLIC_RELATED_LIMIT || 4);
+---
+
+{post.access === 'membership' && (
+  <section
+    class="membership-embed"
+    data-pagefind-ignore
+    data-member-id={post.membershipId}
+    data-locale={post.locale}
+  >
+    <noscript>JavaScript is required to read this membership article.</noscript>
+  </section>
+)}
+{hubEnabled && !off(env.PUBLIC_RELATED_ENABLED) && (
+  <section class="related-panel" data-pagefind-ignore>
+    <script
+      is:inline
+      async
+      src="https://gitblog.app/related/v1/client.js"
+      data-repo={repository}
+      data-post-id={post.id}
+      data-lang={post.locale}
+      data-theme="auto"
+      data-show-thumbnail={String(!off(env.PUBLIC_RELATED_SHOW_THUMBNAIL))}
+      data-limit={Number.isInteger(limit) && limit >= 1 && limit <= 8 ? limit : 4}
+    ></script>
+  </section>
+)}
+<script>
+  import { mountMembership } from '@gitblogapp/browser/membership';
+  const readers = Array.from(document.querySelectorAll<HTMLElement>('[data-member-id]')).map(
+    (host) => mountMembership(host, { id: host.dataset.memberId!, locale: host.dataset.locale }),
+  );
+  window.addEventListener('pagehide', (event) => {
+    // A bfcache restore reuses this document; keep its authenticated reader mounted.
+    if (!event.persisted) readers.forEach((reader) => reader.destroy());
+  });
+</script>
+<style>
+  .membership-embed,
+  .related-panel {
+    margin: 1.5rem 0;
+  }
+</style>

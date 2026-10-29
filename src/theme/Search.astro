@@ -1,0 +1,192 @@
+---
+import type { Blog } from '../lib/template/content';
+import { homePath } from '../lib/template/urls';
+import { copy } from './copy';
+import Icon from './Icon.astro';
+interface Props {
+  blog: Blog;
+  locale: string;
+}
+const { blog, locale } = Astro.props;
+const ui = copy(locale);
+const categories = [...new Set(blog.forLocale(locale).map((post) => post.category))];
+---
+
+<section
+  class="search-page"
+  data-index={`${homePath(blog.config, locale)}search.json`}
+  data-pagefind={`${blog.config.base}/pagefind/pagefind.js`}
+  data-engine={import.meta.env.DEV ? 'json' : 'pagefind'}
+  data-locale={locale}
+  data-count={blog.forLocale(locale).length}
+  data-empty={ui.empty}
+  data-start={ui.searchStart}
+  data-results={ui.results}
+  data-error={ui.error}
+>
+  <p class="eyebrow">ARTICLE INDEX</p>
+  <h1>{ui.searchTitle}</h1>
+  <p class="search-description">{ui.searchHint}</p>
+  <form class="search-form" role="search">
+    <label class="sr-only" for="query">
+      {ui.search}
+    </label>
+    <input id="query" name="q" type="search" placeholder={ui.placeholder} autocomplete="off" />
+    <button type="submit" aria-label={ui.search}>
+      <Icon name="arrow" />
+    </button>
+  </form>
+  <div class="search-controls">
+    <label for="search-category">{ui.topics}</label>
+    <select id="search-category" name="category">
+      <option value="">{ui.all}</option>
+      {categories.map((category) => (
+        <option value={category}>{category}</option>
+      ))}
+    </select>
+  </div>
+  <p class="search-status" role="status" aria-live="polite">
+    {ui.searchStart}
+  </p>
+  <div class="search-results"></div>
+  <noscript>
+    <p>
+      {locale === 'ko'
+        ? '검색에는 JavaScript가 필요합니다. 글 모음에서 모든 글을 읽을 수 있습니다.'
+        : 'Search requires JavaScript. Browse all stories in the journal.'}
+    </p>
+    <a href={homePath(blog.config, locale)}>{ui.back}</a>
+  </noscript>
+</section>
+<script>
+  type Entry = {
+    title: string;
+    description: string;
+    text: string;
+    category: string;
+    tags: string[];
+    aliases?: string[];
+    date: string;
+    url: string;
+  };
+  const root = document.querySelector<HTMLElement>('.search-page')!;
+  const input = document.querySelector<HTMLInputElement>('#query')!;
+  const category = document.querySelector<HTMLSelectElement>('#search-category')!;
+  const status = document.querySelector<HTMLElement>('.search-status')!;
+  const results = document.querySelector<HTMLElement>('.search-results')!;
+  const params = new URLSearchParams(location.search);
+  input.value = params.get('q') || '';
+  category.value = params.get('category') || '';
+  let entries: Promise<Entry[]> | undefined;
+  type Pagefind = {
+    search: (
+      query: string | null,
+      options: { filters: Record<string, string> },
+    ) => Promise<{
+      results: {
+        data: () => Promise<{
+          url: string;
+          meta: Record<string, string>;
+          filters?: Record<string, string[]>;
+        }>;
+      }[];
+    }>;
+  };
+  let pagefind: Promise<Pagefind> | undefined;
+  async function matches(query: string, selected: string): Promise<Entry[]> {
+    if (root.dataset.count === '0') return [];
+    if (root.dataset.engine === 'pagefind') {
+      pagefind ??= import(/* @vite-ignore */ root.dataset.pagefind!);
+      const index = await pagefind!;
+      const response = await index.search(query || null, {
+        filters: { locale: root.dataset.locale!, ...(selected ? { category: selected } : {}) },
+      });
+      return Promise.all(
+        response.results.map(async (item) => {
+          const data = await item.data();
+          return {
+            title: data.meta.title || '',
+            description: data.meta.description || '',
+            text: '',
+            category: data.meta.category || '',
+            tags: data.filters?.tag || [],
+            date: data.meta.date || '',
+            url: data.url,
+          };
+        }),
+      );
+    }
+    // Development has no built Pagefind assets; retain the JSON search endpoint.
+    entries ??= fetch(root.dataset.index!).then((response) => {
+      if (!response.ok) throw new Error('Search unavailable');
+      return response.json();
+    });
+    const words = query.split(/\s+/).filter(Boolean);
+    return (await entries).filter(
+      (entry) =>
+        (!selected || entry.category === selected) &&
+        words.every((word) =>
+          `${entry.title} ${entry.description} ${entry.text} ${entry.tags.join(' ')} ${(entry.aliases || []).join(' ')}`
+            .toLocaleLowerCase()
+            .includes(word),
+        ),
+    );
+  }
+  let revision = 0;
+  async function search() {
+    const current = ++revision;
+    const query = input.value.trim().toLocaleLowerCase();
+    const selected = category.value;
+    const url = new URL(location.href);
+    query ? url.searchParams.set('q', input.value.trim()) : url.searchParams.delete('q');
+    selected ? url.searchParams.set('category', selected) : url.searchParams.delete('category');
+    history.replaceState(null, '', url);
+    if (!query && !selected) {
+      results.replaceChildren();
+      status.textContent = root.dataset.start!;
+      return;
+    }
+    try {
+      const found = await matches(query, selected);
+      if (current !== revision) return;
+      results.replaceChildren();
+      status.textContent = found.length
+        ? `${found.length} ${root.dataset.results}`
+        : root.dataset.empty!;
+      for (const entry of found) {
+        const article = document.createElement('article');
+        article.className = 'search-result';
+        const meta = document.createElement('p');
+        meta.className = 'post-meta';
+        meta.textContent = `${entry.category} · ${entry.date.slice(0, 10)}`;
+        const title = document.createElement('h2');
+        const link = document.createElement('a');
+        link.href = entry.url;
+        link.textContent = entry.title;
+        title.append(link);
+        const description = document.createElement('p');
+        description.textContent = entry.description;
+        article.append(meta, title, description);
+        results.append(article);
+      }
+    } catch (error) {
+      console.error('Search failed', error);
+      if (current === revision) {
+        entries = undefined;
+        pagefind = undefined;
+        status.textContent = root.dataset.error!;
+      }
+    }
+  }
+  let timer: ReturnType<typeof setTimeout>;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(search, 120);
+  });
+  category.addEventListener('change', search);
+  document.querySelector('.search-form')!.addEventListener('submit', (event) => {
+    event.preventDefault();
+    void search();
+  });
+  void search();
+</script>

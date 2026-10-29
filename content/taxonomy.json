@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "sourceLocale": "ko",
+  "categories": [
+    {
+      "id": "category-a77de8a6daa1129516b14c8c",
+      "source": "Design",
+      "labels": {
+        "ko": "디자인",
+        "en": "Design"
+      },
+      "aliases": []
+    },
+    {
+      "id": "category-875b9380866e9d56e7110b0e",
+      "source": "Development",
+      "labels": {
+        "ko": "개발",
+        "en": "Development"
+      },
+      "aliases": []
+    },
+    {
+      "id": "category-beef0ddba1e656eb6bee8df0",
+      "source": "Essays",
+      "labels": {
+        "ko": "에세이",
+        "en": "Essays"
+      },
+      "aliases": []
+    },
+    {
+      "id": "category-ab5aa97074c454a0632057e7",
+      "source": "Notes",
+      "labels": {
+        "ko": "노트",
+        "en": "Notes"
+      },
+      "aliases": []
+    }
+  ],
+  "tags": [
+    {
+      "id": "tag-23661ebec0d785b2f26aae81",
+      "source": "Astro",
+      "labels": {
+        "ko": "Astro",
+        "en": "Astro"
+      },
+      "aliases": []
+    },
+    {
+      "id": "tag-a5ac2b7251f6a58b4a3d1803",
+      "source": "개발",
+      "labels": {
+        "ko": "개발",
+        "en": "Development"
+      },
+      "aliases": []
+    },
+    {
+      "id": "tag-6e8b375a38c1e33c5a542505",
+      "source": "기록",
+      "labels": {
+        "ko": "기록",
+        "en": "Notes"
+      },
+      "aliases": []
+    },
+    {
+      "id": "tag-a333d62d9be4e2be66d36220",
+      "source": "디자인",
+      "labels": {
+        "ko": "디자인",
+        "en": "Design"
+      },
+      "aliases": []
+    },
+    {
+      "id": "tag-6ac12a8f8e4e4c22657b2970",
+      "source": "생각",
+      "labels": {
+        "ko": "생각",
+        "en": "Thoughts"
+      },
+      "aliases": []
+    },
+    {
+      "id": "tag-f532dd1b15769c9256a3cbca",
+      "source": "아키텍처",
+      "labels": {
+        "ko": "아키텍처",
+        "en": "Architecture"
+      },
+      "aliases": []
+    },
+    {
+      "id": "tag-8779aca56be5d5947e8ca5cf",
+      "source": "웹",
+      "labels": {
+        "ko": "웹",
+        "en": "Web"
+      },
+      "aliases": []
+    },
+    {
+      "id": "tag-970823c08f6e9883752b26f2",
+      "source": "접근성",
+      "labels": {
+        "ko": "접근성",
+        "en": "Accessibility"
+      },
+      "aliases": []
+    },
+    {
+      "id": "tag-ad44c8bd38dd70db448cc361",
+      "source": "타이포그래피",
+      "labels": {
+        "ko": "타이포그래피",
+        "en": "Typography"
+      },
+      "aliases": []
+    }
+  ]
+}

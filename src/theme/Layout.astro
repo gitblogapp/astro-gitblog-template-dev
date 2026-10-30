@@ -44,6 +44,7 @@ const title = post
       : `${site.title} — ${site.tagline.replaceAll('\n', ' ')}`;
 const description = post?.description ?? site.description;
 const canonical = absolute(config, pathname);
+const image = post?.cover ? absolute(config, post.cover) : null;
 const structured = post
   ? {
       '@context': 'https://schema.org',
@@ -115,14 +116,27 @@ const structured = post
     <meta property="og:type" content={post ? 'article' : 'website'} />
     <meta property="og:site_name" content={site.title} />
     <meta property="og:locale" content={site.language.replace('-', '_')} />
-    {post?.cover && <meta property="og:image" content={absolute(config, post.cover)} />}
+    {image && (
+      <>
+        <meta property="og:image" content={image} />
+        <meta property="og:image:alt" content={post?.title ?? site.title} />
+      </>
+    )}
     {post && (
       <>
         <meta property="article:published_time" content={new Date(post.date).toISOString()} />
         <meta property="article:modified_time" content={post.lastModified} />
       </>
     )}
-    <meta name="twitter:card" content={post?.cover ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={post?.title ?? site.title} />
+    <meta name="twitter:description" content={description} />
+    {image && (
+      <>
+        <meta name="twitter:image" content={image} />
+        <meta name="twitter:image:alt" content={post?.title ?? site.title} />
+      </>
+    )}
     {site.verification && <meta name="google-site-verification" content={site.verification} />}
     {site.bingVerification && <meta name="msvalidate.01" content={site.bingVerification} />}
     {structured && (

@@ -76,14 +76,28 @@ try {
       const articlePath = `${prefix}blog/${fixtureSlug}/`;
       const $ = load(read(`${articlePath}index.html`));
       const canonical = absolute(config, postPath(config, locale, fixtureSlug));
+      const thumbnail = `${siteUrl}/uploads/fixture.svg`;
+      assert.equal($('meta[property="og:image"]').attr('content'), thumbnail);
+      assert.equal($('meta[name="twitter:image"]').attr('content'), thumbnail);
+      assert.equal($('meta[name="twitter:card"]').attr('content'), 'summary_large_image');
+      assert.equal($('meta[property="og:image:alt"]').attr('content'), post.title);
+      assert.equal($('meta[name="twitter:image:alt"]').attr('content'), post.title);
       assert.equal($('html').attr('lang'), locale);
       const related = $('script[src="https://gitblog.app/related/v1/client.js"]');
       assert.equal(related.attr('data-post-id'), fixtureId);
       assert.equal(related.attr('data-lang'), locale);
       assert.equal(related.attr('data-limit'), '4');
-      assert.equal(JSON.parse($('[data-gitblog-analytics]').attr('data-gitblog-analytics')!).repository, 'fixture/current-blog');
+      assert.equal(
+        JSON.parse($('[data-gitblog-analytics]').attr('data-gitblog-analytics')!).repository,
+        'fixture/current-blog',
+      );
       const speech = JSON.parse(read('.well-known/tts-input.json'));
-      assert.ok(speech.posts.some((entry: {postId:string;locale:string}) => entry.postId === fixtureId && entry.locale === locale));
+      assert.ok(
+        speech.posts.some(
+          (entry: { postId: string; locale: string }) =>
+            entry.postId === fixtureId && entry.locale === locale,
+        ),
+      );
 
       assert.equal($('link[rel=canonical]').attr('href'), canonical);
       assert.equal($('link[type="text/markdown"]').attr('href'), `${canonical}index.md`);

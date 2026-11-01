@@ -55,13 +55,14 @@
     "test:images": "node --test tests/test-images.mjs",
     "distribution:export": "node scripts/distribution/export.mjs",
     "test:distribution": "node --test tests/test-distribution.mjs",
-    "release:check": "npm run check && npm run test:integration && npm run test:tts && npm run test:memberships && npm run test:browser",
-    "test:deepl": "node ./tests/test-deepl-posts.mjs"
+    "release:check": "npm run check && npm run test:integration && npm run test:tts && npm run test:memberships && npm run test:browser && npm run test:seo-content",
+    "test:deepl": "node ./tests/test-deepl-posts.mjs",
+    "test:seo-content": "node tests/test-seo-content.mjs"
   },
   "dependencies": {
-    "@gitblogapp/browser": "0.1.1",
-    "@gitblogapp/cli": "0.1.1",
-    "@gitblogapp/core": "0.1.1",
+    "@gitblogapp/browser": "file:vendor/gitblog-packages/gitblogapp-browser-0.2.0.tgz",
+    "@gitblogapp/cli": "file:vendor/gitblog-packages/gitblogapp-cli-0.2.0.tgz",
+    "@gitblogapp/core": "file:vendor/gitblog-packages/gitblogapp-core-0.2.0.tgz",
     "astro": "^7.3.5",
     "cheerio": "^1.2.0",
     "gray-matter": "^4.0.3",

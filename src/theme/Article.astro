@@ -67,7 +67,7 @@ const giscus =
     <span class="sr-only">{post.taxonomy?.tags.flatMap((tag) => tag.aliases).join(' ')}</span>
     <div class="author-line">
       <span class="author-avatar">{site.author.slice(0, 1)}</span>
-      <span>{site.author}</span>
+      {site.authorUrl ? <a href={site.authorUrl} rel="author">{site.author}</a> : <span>{site.author}</span>}
       {post.updated && (
         <span class="updated">
           {ui.updated} {date(post.updated)}

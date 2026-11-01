@@ -1,4 +1,5 @@
 ---
+import { authorEntity, articleSeoSchema } from "@gitblogapp/core/seo";
 import { localizedSite, languageTag } from '../lib/template/config';
 import type { Blog, Post } from '../lib/template/content';
 import { absolute, homePath, postPath, rssPath, searchPath, withBase } from '../lib/template/urls';
@@ -63,7 +64,8 @@ const structured = post
       description,
       datePublished: new Date(post.date).toISOString(),
       dateModified: post.lastModified,
-      author: { '@type': 'Person', name: site.author },
+      ...articleSeoSchema(post.seo),
+      author: authorEntity(site.author, site.authorSiteUrl, site.authorUrl),
       mainEntityOfPage: canonical,
       url: canonical,
       inLanguage: site.language,

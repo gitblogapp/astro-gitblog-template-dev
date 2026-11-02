@@ -65,7 +65,7 @@ const structured = post
       datePublished: new Date(post.date).toISOString(),
       dateModified: post.lastModified,
       ...articleSeoSchema(post.seo),
-      author: authorEntity(site.author, site.authorSiteUrl, site.authorUrl),
+      author: { ...authorEntity(site.author, site.authorSiteUrl, site.authorUrl), '@type': site.authorType },
       mainEntityOfPage: canonical,
       url: canonical,
       inLanguage: site.language,

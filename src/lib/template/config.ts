@@ -66,7 +66,7 @@ export function loadConfig(
   )
     throw new Error('PUBLIC_GISCUS_HOST must be an HTTPS origin');
   const site = {
-    title: setting('PUBLIC_SITE_TITLE', 'Margin'),
+    title: setting('PUBLIC_SITE_TITLE', 'GitBlog'),
     tagline: setting('PUBLIC_SITE_TAGLINE'),
     description: setting('PUBLIC_SITE_DESCRIPTION'),
     footer: setting('PUBLIC_SITE_FOOTER'),

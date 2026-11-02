@@ -41,6 +41,7 @@ try {
   ]) {
     const env = {
       PUBLIC_SITE_URL: siteUrl,
+      PUBLIC_SITE_TITLE: 'Configured blog name',
       GITHUB_REPOSITORY: 'fixture/current-blog',
       GITBLOG_BUILD_COMMIT: 'a'.repeat(40),
     };
@@ -75,6 +76,11 @@ try {
       const post = blog.forLocale(locale)[0];
       const articlePath = `${prefix}blog/${fixtureSlug}/`;
       const $ = load(read(`${articlePath}index.html`));
+      assert.equal($('.site-header .brand span').text(), 'Configured blog name');
+      assert.equal($('.site-header .brand').attr('aria-label'), 'Configured blog name home');
+      assert.equal($('.footer-brand span').text(), 'Configured blog name');
+      const home = load(read(`${prefix}index.html`));
+      assert.equal(home('.site-header .brand span').text(), 'Configured blog name');
       const canonical = absolute(config, postPath(config, locale, fixtureSlug));
       const thumbnail = `${siteUrl}/uploads/fixture.svg`;
       assert.equal($('meta[property="og:image"]').attr('content'), thumbnail);

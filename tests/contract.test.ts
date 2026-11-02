@@ -26,6 +26,18 @@ const write = (dir: string, file: string, value: string) => {
   fs.writeFileSync(path.join(dir, file), value);
 };
 
+test('blog identity defaults to GitBlog and honors the configured title over legacy copy', () =>
+  fixture((dir) => {
+    assert.equal(loadConfig(process.cwd(), 'production', {}).site.title, 'GitBlog');
+    write(dir, 'content/site.json', '{"title":"Legacy blog"}');
+    fs.appendFileSync(path.join(dir, '.env.production'), 'PUBLIC_SITE_TITLE="My configured blog"\n');
+    assert.equal(loadConfig(dir, 'production', {}).site.title, 'My configured blog');
+    assert.equal(loadConfig(dir, 'production', { PUBLIC_SITE_TITLE: 'Override blog' }).site.title, 'Override blog');
+    fs.rmSync(path.join(dir, 'content/site.json'));
+    write(dir, '.env.production', 'PUBLIC_HUB_ENABLED=false\n');
+    assert.equal(loadConfig(dir, 'production', {}).site.title, 'GitBlog');
+  }));
+
 test('environment and legacy site copy agree across renderer and harness, preserving explicit blanks', () =>
   fixture((dir) => {
     const config = loadConfig(dir, 'production', {});

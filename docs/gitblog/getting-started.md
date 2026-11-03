@@ -98,7 +98,7 @@ CI: site:check → 콘텐츠 준비·ID 저장 → 번역·저장 → Discussion
 
 `main` push와 workflow dispatch로 배포합니다. template 저장소에서는 배포 job을 건너뜁니다. `.well-known`을 tar에 포함하고, `.git`, `.github`, `.env*`를 제외합니다. Custom domain은 `site:pages`로 Pages 설정도 맞춰야 하며 `CNAME` 파일만으로 DNS 설정이 되지 않습니다.
 
-GitBlog 자동 등록은 기본 비활성입니다. 별도 Astro 템플릿의 계보와 workflow가 서비스에서 승인된 뒤 `PUBLIC_HUB_ENABLED`, `PUBLIC_HUB_URL`, Actions 변수 `GITBLOG_OFFICIAL_INTEGRATION=true`를 설정합니다. 이 변수만으로 서비스 승인이 되지는 않습니다. [플랫폼 연동 경계](../../docs/gitblog/platform-integration.md)를 확인하세요. 이력 삭제 workflow는 포함하지 않았습니다.
+GitBlog 피드 참여는 `PUBLIC_HUB_ENABLED=true`와 유효한 `PUBLIC_HUB_URL`로 설정합니다. 공식 템플릿의 등록 job은 별도의 Actions 변수 없이 실행되며, 서버가 템플릿 계보와 승인된 workflow를 검증합니다. 새 템플릿 추가와 기존 블로그의 연동 설정은 [플랫폼 연동 경계](platform-integration.md)를 확인하세요.
 
 ## 커스터마이징·검증
 

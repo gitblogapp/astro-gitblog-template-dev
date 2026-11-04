@@ -98,7 +98,7 @@ const giscus =
             : '')
         }
       />
-      <PostIntegrations {blog} {post} />
+      <PostIntegrations {blog} {post} placement="body" />
       <Slot name="article-after-body" {...context} />
       {config.policy.markdown && (
         <p class="post-meta" data-pagefind-ignore>
@@ -130,6 +130,7 @@ const giscus =
           ></div>
         </section>
       )}
+      <PostIntegrations {blog} {post} placement="after-comments" />
       <a class="article-back" href={homePath(config, locale)}>
         <Icon name="back" /> {ui.back}
       </a>
